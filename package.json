@@ -5,10 +5,10 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "server": "node server.js",
     "server:dev": "nodemon server.js",
-    "server:prod": "set NODE_ENV=production & node server.js",
-    "server:prod:mac": "export NODE_ENV=production && node server.js"
+    "server:local-prod": "set NODE_ENV=production & node --env-file=.env server.js",
+    "server:local-prod:mac": "export NODE_ENV=production && node --env-file=.env server.js",
+    "server:prod": "node server.js"
   },
   "repository": {
     "type": "git",
