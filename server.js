@@ -32,3 +32,11 @@ if (process.env.NOVE_ENV === 'production') {
 app.get('/*all', (req, res) => {
   res.sendFile(path.resolve('public/index.html'))
 })
+
+// Run server
+import { logger } from './services/logger.service.js'
+const port = process.env.PORT || 3030
+
+server.listen(port, () => {
+  logger.info(`Server is running on: http://localhost:${port}/`)
+})
