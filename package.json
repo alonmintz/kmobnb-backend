@@ -1,0 +1,31 @@
+{
+  "name": "kmobnb-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "server": "node server.js",
+    "server:dev": "nodemon server.js",
+    "server:prod": "set NODE_ENV=production & node server.js",
+    "server:prod:mac": "export NODE_ENV=production && node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alonmintz/kmobnb-backend.git"
+  },
+  "author": "@alonmintz, @keyal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alonmintz/kmobnb-backend/issues"
+  },
+  "homepage": "https://github.com/alonmintz/kmobnb-backend#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongodb": "^6.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
