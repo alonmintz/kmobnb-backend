@@ -12,7 +12,7 @@ app.use(express.json())
 
 
 if (process.env.NOVE_ENV === 'production') {
-  app.unsubscribe(express.static(path.resolve('public')))
+  app.use(express.static(path.resolve('public')))
 } else {
   const corsOptions = {
     origin: [
