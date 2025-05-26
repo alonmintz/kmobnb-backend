@@ -4,6 +4,8 @@ import cors from 'cors'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 
+import { authRoutes } from './api/auth/auth.routes.js'
+
 const app = express()
 const server = http.createServer(app)
 
@@ -26,6 +28,7 @@ if (process.env.NOVE_ENV === 'production') {
   app.use(cors(corsOptions))
 }
 
+app.use('/api/auth', authRoutes)
 
 
 // handle non-existant routes
