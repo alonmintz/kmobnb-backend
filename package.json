@@ -5,10 +5,12 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "server:dev": "nodemon server.js",
-    "server:local-prod": "set NODE_ENV=production & node --env-file=.env server.js",
-    "server:local-prod:mac": "export NODE_ENV=production && node --env-file=.env server.js",
-    "server:prod": "node server.js"
+    "dev:local": "nodemon server.js",
+    "dev:remote": "set NODE_ENV=remoteDev & nodemon server.js",
+    "dev:remote:mac": "export NODE_ENV=remoteDev && nodemon server.js",
+    "prod:local": "set NODE_ENV=production & node --env-file=.env server.js",
+    "prod:local:mac": "export NODE_ENV=production && node --env-file=.env server.js",
+    "prod": "node server.js"
   },
   "repository": {
     "type": "git",
