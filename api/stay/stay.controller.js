@@ -43,15 +43,12 @@ export async function getStayById(req, res) {
   }
 }
 
-//todo: add middleware that validates user logged in
-//todo: add middleware to validate stay entity
 export async function addStay(req, res) {
   const { loggedinUser, body: stay } = req;
   try {
     //todo: EYAL
-    //todo: call userService to populate host
-    // const user = userService.futureFunction(loggedinUser);
-    // stay.host = {object with necessary user fields}
+    //full loggedin user will be populated in the requireAuth middleware
+    // stay.host = {object with necessary loggedin user fields}
 
     const insertResult = await stayService.add(stay);
     const addedStay = await stayService.getById(
@@ -64,9 +61,6 @@ export async function addStay(req, res) {
   }
 }
 
-//todo: add middleware that validates user logged in
-//todo: add middleware that validates logged in user id to stay's host id
-//todo: add middleware to validate stay entity
 export async function updateStay(req, res) {
   const { params, body: stay } = req;
   const stayId = params.id;
@@ -79,8 +73,6 @@ export async function updateStay(req, res) {
   }
 }
 
-//todo: add middleware that validates user logged in
-//todo: add middleware that validates logged in user id to stay's host id
 export async function updateStayStatus(req, res) {
   const { params, body } = req;
   const stayId = params.id;

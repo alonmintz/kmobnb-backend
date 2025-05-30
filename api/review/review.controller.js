@@ -6,7 +6,6 @@ import {
   reviewsService,
 } from "./review.service.js";
 
-//todo: add validate stayId exists middleware
 export async function getReviewsDataByStayId(req, res) {
   try {
     const { params } = req;
@@ -28,7 +27,6 @@ export async function getReviewsDataByStayId(req, res) {
   }
 }
 
-//todo: add validate stayId exists middleware
 export async function getReviewsGeneralDataByStayId(req, res) {
   try {
     const { params } = req;
@@ -44,7 +42,6 @@ export async function getReviewsGeneralDataByStayId(req, res) {
   }
 }
 
-//todo: add validate stayId exists middleware
 export async function getReviewsByStayId(req, res) {
   try {
     const { params } = req;
@@ -65,15 +62,13 @@ export async function getReviewsByStayId(req, res) {
     res.status(500).send({ err: `Failed to get reviews for stay ${stayId}` });
   }
 }
-//todo: add middleware that validates user logged in
-//todo: add validate stayId exists middleware
+
 export async function addReview(req, res) {
   const { loggedinUser, body: review } = req;
   try {
     //todo: EYAL
-    //todo: call userService to populate by
-    // const user = userService.futureFunction(loggedinUser);
-    // review.by = {object with necessary user fields}
+    //full loggedin user will be populated in the requireAuth middleware
+    // review.by = {object with necessary loggedin user fields}
 
     const insertResult = await reviewsService.add(review);
     const addedReview = await reviewsService.getById(

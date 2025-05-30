@@ -1,6 +1,5 @@
 import { ObjectId } from "mongodb";
 import { logger } from "../../services/logger.service.js";
-import { asyncLocalStorage } from "../../services/als.service.js";
 import { dbService } from "../../services/db.service.js";
 
 export const DEFAULT_PAGE_SIZE = 10;
@@ -34,7 +33,6 @@ async function query(filterBy) {
 
     const reviews = await collection
       .find(criteria)
-      .project({ at: 1, by: 1, txt: 1, starsRate: 1, _id: 1 })
       .sort({ [filterBy.sortBy]: filterBy.sortDir })
       .skip(filterBy.pageIdx * filterBy.pageSize)
       .limit(filterBy.pageSize)
@@ -103,6 +101,8 @@ async function getCalculatedData(filterBy) {
 }
 
 async function add(review) {
+  const { stayId } = review;
+  review.stayId = ObjectId.createFromHexString(stayId);
   try {
     const collection = await dbService.getCollection("reviews");
     const insertResult = await collection.insertOne(review);
