@@ -3,25 +3,27 @@ import { logger } from "../../services/logger.service.js";
 import { asyncLocalStorage } from "../../services/als.service.js";
 import { dbService } from "../../services/db.service.js";
 
-const PAGE_SIZE = 10;
-const DEFAULT_PAGE_INDEX = 0;
+export const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE_INDEX = 0;
+export const DEFAULT_SORT_BY = "at";
 
 const emptyFilter = {
   stayId: null,
-  pageSize: PAGE_SIZE,
+  pageSize: DEFAULT_PAGE_SIZE,
   pageIdx: DEFAULT_PAGE_INDEX,
-  sortBy: "at",
+  sortBy: DEFAULT_SORT_BY,
   sortDir: -1,
 };
 
 export const reviewsService = {
-  getReviewsData,
-  getReviewsDisplay,
-  getReviewsGeneralData,
-  // addReview
+  getCalculatedData,
+  query,
+  getGeneralData,
+  add,
+  getById,
 };
 
-async function getReviewsDisplay(filterBy) {
+async function query(filterBy) {
   filterBy = { ...emptyFilter, ...filterBy };
 
   try {
@@ -32,7 +34,7 @@ async function getReviewsDisplay(filterBy) {
 
     const reviews = await collection
       .find(criteria)
-      .project({ at: 1, by: 1, txt: 1, starsRate: 1, _id: 0 })
+      .project({ at: 1, by: 1, txt: 1, starsRate: 1, _id: 1 })
       .sort({ [filterBy.sortBy]: filterBy.sortDir })
       .skip(filterBy.pageIdx * filterBy.pageSize)
       .limit(filterBy.pageSize)
@@ -45,7 +47,7 @@ async function getReviewsDisplay(filterBy) {
   }
 }
 
-async function getReviewsGeneralData(filterBy) {
+async function getGeneralData(filterBy) {
   filterBy = { ...emptyFilter, ...filterBy };
 
   try {
@@ -67,7 +69,7 @@ async function getReviewsGeneralData(filterBy) {
   }
 }
 
-async function getReviewsData(filterBy) {
+async function getCalculatedData(filterBy) {
   filterBy = { ...emptyFilter, ...filterBy };
 
   try {
@@ -79,12 +81,12 @@ async function getReviewsData(filterBy) {
 
     const reviewsCount = totalReviews.length;
 
-    const [avgStarsRate, starsRatings, categoryRatings, reviewsDisplay] =
+    const [avgStarsRate, starsRatings, categoryRatings, reviews] =
       await Promise.all([
         reviewsCount ? _getAverageStarsRating(totalReviews) : null,
         _getStarsRatingCount(totalReviews),
         _getAverageCategoryRatings(totalReviews),
-        getReviewsDisplay(filterBy),
+        query(filterBy),
       ]);
 
     return {
@@ -92,10 +94,38 @@ async function getReviewsData(filterBy) {
       avgStarsRate,
       starsRatings,
       categoryRatings,
-      reviewsDisplay,
+      reviews,
     };
   } catch (err) {
     logger.error("cannot get reviews data by stay id", err);
+    throw err;
+  }
+}
+
+async function add(review) {
+  try {
+    const collection = await dbService.getCollection("reviews");
+    const insertResult = await collection.insertOne(review);
+
+    return insertResult;
+  } catch (err) {
+    logger.error("cannot add review", err);
+    throw err;
+  }
+}
+
+async function getById(reviewId) {
+  try {
+    const collection = await dbService.getCollection("reviews");
+    const review = await collection.findOne({
+      _id: ObjectId.createFromHexString(reviewId),
+    });
+
+    if (!review) return null;
+
+    return review;
+  } catch (err) {
+    logger.error("error getting review by id", err);
     throw err;
   }
 }

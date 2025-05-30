@@ -100,7 +100,7 @@ async function getById(stayId) {
     });
 
     if (!stay) return null;
-    const reviewsData = await reviewsService.getReviewsData({
+    const reviewsData = await reviewsService.getCalculatedData({
       stayId,
       pageSize: 4,
     });
@@ -115,10 +115,9 @@ async function getById(stayId) {
 async function add(stay) {
   try {
     const collection = await dbService.getCollection("stays");
-    const addedStay = await collection.insertOne(stay);
-    console.log({ addedStay });
+    const insertResult = await collection.insertOne(stay);
 
-    return addedStay;
+    return insertResult;
   } catch (err) {
     logger.error("cannot add stay", err);
     throw err;
