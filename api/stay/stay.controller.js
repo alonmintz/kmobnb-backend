@@ -46,15 +46,17 @@ export async function getStayById(req, res) {
 //todo: add middleware that validates user logged in
 //todo: add middleware to validate stay entity
 export async function addStay(req, res) {
-  console.log("body:", req.body);
-
   const { loggedinUser, body: stay } = req;
   try {
+    //todo: EYAL
     //todo: call userService to populate host
-    // stay.host = loggedinUser;
+    // const user = userService.futureFunction(loggedinUser);
+    // stay.host = {object with necessary user fields}
 
     const insertResult = await stayService.add(stay);
-    const addedStay = await stayService.getById(insertResult.insertedId);
+    const addedStay = await stayService.getById(
+      insertResult.insertedId.toString()
+    );
     res.status(201).json(addedStay);
   } catch (err) {
     logger.error("Failed to add stay", err);

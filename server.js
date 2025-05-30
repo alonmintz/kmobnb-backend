@@ -8,6 +8,7 @@ import { setupAsyncLocalStorage } from "./middlewares/setupAls.middleware.js";
 
 import { authRoutes } from "./api/auth/auth.routes.js";
 import { stayRouter } from "./api/stay/stay.routes.js";
+import { reviewRouter } from "./api/review/review.routes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -34,6 +35,7 @@ app.all("/*all", setupAsyncLocalStorage);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/stay", stayRouter);
+app.use("/api/review", reviewRouter);
 
 // handle non-existant routes
 app.get("/*all", (req, res) => {
