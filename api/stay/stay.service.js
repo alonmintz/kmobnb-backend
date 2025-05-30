@@ -4,9 +4,10 @@ import { asyncLocalStorage } from "../../services/als.service.js";
 import { dbService } from "../../services/db.service.js";
 import { reviewsService } from "../review/review.service.js";
 
-const STAYS_PER_LOAD = 20;
-const DEFAULT_BULK_INDEX = 0;
-const LIST_TYPE_DEFAULT = "default";
+export const STAYS_PER_LOAD = 20;
+export const DEFAULT_BULK_INDEX = 0;
+export const LIST_TYPE_DEFAULT = "default";
+export const SORT_BY_DEFAULT = "starsRate";
 const LIST_TYPE_BY_HOST = "by-host";
 
 const emptyFilter = {
@@ -20,7 +21,7 @@ const emptyFilter = {
   listType: LIST_TYPE_DEFAULT,
   bulkIdx: DEFAULT_BULK_INDEX,
   bulkSize: STAYS_PER_LOAD,
-  sortBy: "starsRate",
+  sortBy: SORT_BY_DEFAULT,
   sortDir: -1,
 };
 
@@ -29,7 +30,6 @@ export const stayService = {
   getById,
   add,
   update,
-  remove,
 };
 
 async function query(filterBy) {
@@ -40,8 +40,6 @@ async function query(filterBy) {
     const sort = _buildSort(filterBy);
     const collection = await dbService.getCollection("stays");
 
-    //todo: refactor long pipeline to calling review service and orders service
-    //todo: add filtering by occupancy if startDate & endDate are not null
     const pipeline = [
       { $match: criteria },
       {
@@ -64,40 +62,6 @@ async function query(filterBy) {
           reviewsCount: { $size: "$reviews" },
         },
       },
-      { $project: { reviews: 0 } },
-    ];
-
-    if (filterBy.listType === LIST_TYPE_DEFAULT) {
-      console.log("entered orders lookup");
-
-      pipeline.push(
-        {
-          $lookup: {
-            from: "orders",
-            localField: "_id",
-            foreignField: "stayId",
-            as: "orders",
-          },
-        },
-        {
-          $addFields: {
-            occupancy: {
-              $map: {
-                input: "$orders",
-                as: "order",
-                in: {
-                  startDate: "$$order.startDate",
-                  endDate: "$$order.endDate",
-                },
-              },
-            },
-          },
-        },
-        { $project: { orders: 0 } }
-      );
-    }
-
-    pipeline.push(
       {
         $project: {
           _id: 1,
@@ -113,11 +77,13 @@ async function query(filterBy) {
       },
       { $sort: sort },
       { $skip: filterBy.bulkIdx * filterBy.bulkSize },
-      { $limit: filterBy.bulkSize }
-    );
+      { $limit: filterBy.bulkSize },
+    ];
 
-    const stays = await collection.aggregate(pipeline).toArray();
-    // console.log(JSON.stringify(stays, null, 2));
+    let stays = await collection.aggregate(pipeline).toArray();
+    if (filterBy.listType === LIST_TYPE_DEFAULT) {
+      stays = _addNearAvailableDates(stays);
+    }
 
     return stays;
   } catch (err) {
@@ -146,11 +112,38 @@ async function getById(stayId) {
   }
 }
 
-async function add(stay) {}
+async function add(stay) {
+  try {
+    const collection = await dbService.getCollection("stays");
+    const addedStay = await collection.insertOne(stay);
+    console.log({ addedStay });
 
-async function update(stay) {}
+    return addedStay;
+  } catch (err) {
+    logger.error("cannot add stay", err);
+    throw err;
+  }
+}
 
-async function remove(stayId) {}
+async function update(stay) {
+  const { _id, ...stayToSave } = stay;
+
+  try {
+    const criteria = { _id: ObjectId.createFromHexString(stay._id) };
+    const collection = await dbService.getCollection("stays");
+
+    const updatedStay = await collection.findOneAndUpdate(
+      criteria,
+      { $set: stayToSave },
+      { returnDocument: "after" }
+    );
+
+    return updatedStay;
+  } catch (err) {
+    logger.error(`cannot update stay ${stay._id}`, err);
+    throw err;
+  }
+}
 
 function _buildCriteria(filterBy) {
   const criteria = {
@@ -164,13 +157,28 @@ function _buildCriteria(filterBy) {
     criteria.amenities = { $in: ["Pets allowed"] };
   }
 
+  if (
+    filterBy.listType === LIST_TYPE_DEFAULT &&
+    filterBy.startDate &&
+    filterBy.endDate
+  ) {
+    criteria.occupancy = {
+      $not: {
+        $elemMatch: {
+          startDate: { $lt: filterBy.endDate },
+          endDate: { $gt: filterBy.startDate },
+        },
+      },
+    };
+  }
+
   if (filterBy.listType === LIST_TYPE_BY_HOST) {
     const store = asyncLocalStorage.getStore();
     const loggedinUser = store?.loggedinUser;
     if (loggedinUser?._id) {
       criteria["host.userId"] = ObjectId.createFromHexString(loggedinUser._id);
     } else {
-      console.warn("byHost flag was set but no loggedinUser in ALS");
+      console.warn("byHost flag was set but no logged in user in ALS");
     }
   }
   return criteria;
@@ -179,4 +187,44 @@ function _buildCriteria(filterBy) {
 function _buildSort(filterBy) {
   if (!filterBy.sortBy) return {};
   return { [filterBy.sortBy]: filterBy.sortDir };
+}
+
+function _addNearAvailableDates(stays) {
+  const TWO_DAYS = 2 * 24 * 60 * 60 * 1000;
+  const ONE_DAY = 1 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  for (const stay of stays) {
+    //  Sort occupancy by startDate
+    const occupancy = (stay.occupancy || [])
+      .slice()
+      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+    let found = false;
+    let startDate = now;
+
+    for (const occ of occupancy) {
+      const occStart = new Date(occ.startDate).getTime();
+      const occEnd = new Date(occ.endDate).getTime();
+
+      // If the window [startDate, startDate+2days) ends before the next occupancy starts, it's available
+      if (startDate + TWO_DAYS < occStart) {
+        found = true;
+        break;
+      }
+
+      // If the window overlaps, move startDate to 1 day after this occupancy's end
+      if (startDate < occEnd) {
+        startDate = occEnd + ONE_DAY;
+      }
+    }
+
+    // If no window found in between, set after last occupancy or now
+    stay.nearAvailableDates = {
+      startDate: new Date(startDate).toISOString(),
+      endDate: new Date(startDate + TWO_DAYS).toISOString(),
+    };
+  }
+
+  return stays;
 }

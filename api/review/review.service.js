@@ -18,6 +18,7 @@ export const reviewsService = {
   getReviewsData,
   getReviewsDisplay,
   getReviewsGeneralData,
+  // addReview
 };
 
 async function getReviewsDisplay(filterBy) {
@@ -28,7 +29,6 @@ async function getReviewsDisplay(filterBy) {
     const criteria = {
       stayId: ObjectId.createFromHexString(filterBy.stayId),
     };
-    console.log("filterBy.pageSize:", filterBy.pageSize);
 
     const reviews = await collection
       .find(criteria)
@@ -118,29 +118,26 @@ async function _getStarsRatingCount(reviews) {
 
 async function _getAverageCategoryRatings(reviews) {
   const categoryKeys = [
-    { key: "cleanliness", label: "Cleanliness" },
-    { key: "accuracy", label: "Accuracy" },
-    { key: "checkIn", label: "Check-in" },
-    { key: "communications", label: "Communication" },
-    { key: "location", label: "Location" },
-    { key: "value", label: "Value" },
+    "cleanliness",
+    "accuracy",
+    "checkIn",
+    "communications",
+    "location",
+    "value",
   ];
 
-  const categoryRatings = categoryKeys.map((cat) => {
+  const categoryRatings = {};
+
+  for (const key of categoryKeys) {
     const rates = reviews
-      .map((review) => review.categoryRatings?.[cat.key])
+      .map((review) => review.categoryRatings?.[key])
       .filter((rate) => typeof rate === "number");
-    return {
-      category: cat.label,
-      avgRate: rates.length
-        ? Number(
-            (rates.reduce((sum, rate) => sum + rate, 0) / rates.length).toFixed(
-              2
-            )
-          )
-        : null,
-    };
-  });
+    categoryRatings[key] = rates.length
+      ? Number(
+          (rates.reduce((sum, rate) => sum + rate, 0) / rates.length).toFixed(1)
+        )
+      : null;
+  }
 
   return categoryRatings;
 }
