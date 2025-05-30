@@ -8,16 +8,31 @@ import {
   updateStay,
   updateStayStatus,
 } from "./stay.controller.js";
+import { requireAuth } from "../../middlewares/requireAuth.middleware.js";
+import {
+  validateStayRequiredFields,
+  validateUserIdIsHostId,
+} from "../../middlewares/validateStay.middleware.js";
 
 const router = express.Router();
 
 router.use(log);
 
-//todo: add middlewares
 router.get("/", getStays);
 router.get("/:id", getStayById);
-router.post("/", addStay);
-router.put("/:id", updateStay);
-router.put("/:id/status", updateStayStatus);
+router.post("/", requireAuth, validateStayRequiredFields, addStay);
+router.put(
+  "/:id",
+  requireAuth,
+  validateUserIdIsHostId,
+  validateStayRequiredFields,
+  updateStay
+);
+router.put(
+  "/:id/status",
+  requireAuth,
+  validateUserIdIsHostId,
+  updateStayStatus
+);
 
 export const stayRouter = router;

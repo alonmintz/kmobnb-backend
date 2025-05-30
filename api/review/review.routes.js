@@ -7,15 +7,16 @@ import {
   getReviewsDataByStayId,
   getReviewsGeneralDataByStayId,
 } from "./review.controller.js";
+import { requireAuth } from "../../middlewares/requireAuth.middleware.js";
+import { validateStayId } from "../../middlewares/validateStay.middleware.js";
 
 const router = express.Router();
 
 router.use(log);
 
-//todo: add middlewares
-router.get("/:stayId", getReviewsByStayId);
-router.get("/:stayId/general", getReviewsGeneralDataByStayId);
-router.get("/:stayId/data", getReviewsDataByStayId);
-router.post("/", addReview);
+router.get("/:stayId", validateStayId, getReviewsByStayId);
+router.get("/:stayId/general", validateStayId, getReviewsGeneralDataByStayId);
+router.get("/:stayId/data", validateStayId, getReviewsDataByStayId);
+router.post("/", requireAuth, addReview);
 
 export const reviewRouter = router;
