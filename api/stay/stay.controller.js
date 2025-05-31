@@ -45,11 +45,10 @@ export async function getStayById(req, res) {
 
 export async function addStay(req, res) {
   const { loggedinUser, body: stay } = req;
+  const { _id: userId, fullname, imgUrl, isSuperHost } = loggedinUser;
+  userId = ObjectId.createFromHexString(userId);
+  stay.host = { userId, fullname, imgUrl, isSuperHost };
   try {
-    //TODO: EYAL
-    //full loggedin user will be populated in the requireAuth middleware
-    // stay.host = {object with necessary loggedin user fields}
-
     const insertResult = await stayService.add(stay);
     const addedStay = await stayService.getById(
       insertResult.insertedId.toString()
