@@ -13,6 +13,7 @@ import {
   validateStayRequiredFields,
   validateUserIdIsHostId,
 } from "../../middlewares/validateStay.middleware.js";
+import { enrichLoggedinUser } from "../../middlewares/enrichLoggedinUser.middleware.js";
 
 const router = express.Router();
 
@@ -20,10 +21,17 @@ router.use(log);
 
 router.get("/", getStays);
 router.get("/:id", getStayById);
-router.post("/", requireAuth, validateStayRequiredFields, addStay);
+router.post(
+  "/",
+  requireAuth,
+  enrichLoggedinUser,
+  validateStayRequiredFields,
+  addStay
+);
 router.put(
   "/:id",
   requireAuth,
+  enrichLoggedinUser,
   validateUserIdIsHostId,
   validateStayRequiredFields,
   updateStay
@@ -31,6 +39,7 @@ router.put(
 router.put(
   "/:id/status",
   requireAuth,
+  enrichLoggedinUser,
   validateUserIdIsHostId,
   updateStayStatus
 );

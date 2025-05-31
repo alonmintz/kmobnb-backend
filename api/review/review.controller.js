@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { logger } from "../../services/logger.service.js";
 import {
   DEFAULT_PAGE_INDEX,
@@ -65,11 +66,10 @@ export async function getReviewsByStayId(req, res) {
 
 export async function addReview(req, res) {
   const { loggedinUser, body: review } = req;
+  const { fullname, imgUrl, _id: userId } = loggedinUser;
+  userId = ObjectId.createFromHexString(userId);
+  review.by = { fullname, imgUrl, userId };
   try {
-    //TODO: EYAL
-    //full loggedin user will be populated in the requireAuth middleware
-    // review.by = {object with necessary loggedin user fields}
-
     const insertResult = await reviewsService.add(review);
     const addedReview = await reviewsService.getById(
       insertResult.insertedId.toString()
