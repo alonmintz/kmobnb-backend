@@ -5,43 +5,42 @@ export async function login(req, res) {
     const { username, password } = req.body
     try {
         const user = await authService.login(username, password)
-        const loginToken = authService.getLoginToken(user)
+        logger.debug('auth.controller - user + pasword matched for ' + user.username)
+        const accessToken = authService.getAccessToken(user)
 
-        logger.info('User login: ', user)
+        logger.info('auth.controller - User login:', user)
 
-        res.cookie('loginToken', loginToken, { sameSite: 'None', secure: true })
+        res.cookie('accessToken', accessToken, { sameSite: 'None', secure: true })
         res.json(user)
     } catch (err) {
-        logger.error('Failed to Login ' + err)
+        logger.error('auth.controller - Failed to Login ' + err)
         res.status(401).send({ err: 'Failed to Login' })
     }
 }
 
 export async function signup(req, res) {
     try {
-        const credentials = req.body
+        const signupData = req.body
 
-        // Never log passwords
-        // logger.debug(credentials)
+        const account = await authService.signup(signupData)
+        logger.debug(`auth.controller - New account created: ` + JSON.stringify(account))
 
-        const account = await authService.signup(credentials)
-        logger.debug(`auth.route - new account created: ` + JSON.stringify(account))
+        const user = await authService.login(signupData.username, signupData.password)
+        logger.info('auth.controller - User login:', user)
 
-        const user = await authService.login(credentials.username, credentials.password)
-        logger.info('User signup:', user)
-
-        const loginToken = authService.getLoginToken(user)
-        res.cookie('loginToken', loginToken, { sameSite: 'None', secure: true })
+        const accessToken = authService.getAccessToken(user)
+        logger.debug('auth.controller - got accessToken for ' + signupData.username)
+        res.cookie('accessToken', accessToken, { sameSite: 'None', secure: true })
         res.json(user)
     } catch (err) {
-        logger.error('Failed to signup ' + err)
+        logger.error('auth.controller - Failed to signup: ' + err)
         res.status(400).send({ err: 'Failed to signup' })
     }
 }
 
 export async function logout(req, res) {
     try {
-        res.clearCookie('loginToken')
+        res.clearCookie('accessToken')
         res.send({ msg: 'Logged out successfully' })
     } catch (err) {
         res.status(400).send({ err: 'Failed to logout' })

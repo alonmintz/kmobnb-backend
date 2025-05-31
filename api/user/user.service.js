@@ -12,10 +12,12 @@ export const userService = {
     getByUsername, // Used for Login
 }
 
+const USERS_COLLECTION = 'users'
+
 async function query(filterBy = {}) {
     const criteria = _buildCriteria(filterBy)
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         var users = await collection.find(criteria).toArray()
         users = users.map(user => {
             delete user.password
@@ -35,7 +37,7 @@ async function getById(userId) {
     try {
         var criteria = { _id: ObjectId.createFromHexString(userId) }
 
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         const user = await collection.findOne(criteria)
         delete user.password
 
@@ -56,7 +58,7 @@ async function getById(userId) {
 
 async function getByUsername(username) {
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         const user = await collection.findOne({ username })
         return user
     } catch (err) {
@@ -69,7 +71,7 @@ async function remove(userId) {
     try {
         const criteria = { _id: ObjectId.createFromHexString(userId) }
 
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.deleteOne(criteria)
     } catch (err) {
         logger.error(`cannot remove user ${userId}`, err)
@@ -85,7 +87,7 @@ async function update(user) {
             fullname: user.fullname,
             score: user.score,
         }
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
         return userToSave
     } catch (err) {
@@ -96,16 +98,16 @@ async function update(user) {
 
 async function add(user) {
     try {
-        // peek only updatable fields!
+        // pick only updatable fields!
         const userToAdd = {
             username: user.username,
-            password: user.password,
+            password: user.pwHash,
             fullname: user.fullname,
             imgUrl: user.imgUrl,
             isAdmin: user.isAdmin,
-            score: 100,
+            isHost: user.isHost
         }
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.insertOne(userToAdd)
         return userToAdd
     } catch (err) {
