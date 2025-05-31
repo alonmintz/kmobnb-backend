@@ -5,7 +5,7 @@ export async function login(req, res) {
     const { username, password } = req.body
     try {
         const user = await authService.login(username, password)
-        logger.debug('auth.controller - user + pasword matched for ' + user.username)
+        logger.debug('auth.controller - user + password matched for ' + user.username)
         const accessToken = authService.getAccessToken(user)
 
         logger.info('auth.controller - User login:', user)
@@ -40,6 +40,7 @@ export async function signup(req, res) {
 
 export async function logout(req, res) {
     try {
+        logger.info('auth.controller - user logout: ' + req.loggedinUser.username)
         res.clearCookie('accessToken')
         res.send({ msg: 'Logged out successfully' })
     } catch (err) {

@@ -41,17 +41,17 @@ async function getById(userId) {
         const user = await collection.findOne(criteria)
         delete user.password
 
-        criteria = { byUserId: userId }
+        // criteria = { byUserId: userId }
 
-        // user.givenReviews = await reviewService.query(criteria)
-        user.givenReviews = user.givenReviews.map(review => {
-            delete review.byUser
-            return review
-        })
+        // // user.givenReviews = await reviewService.query(criteria)
+        // user.givenReviews = user.givenReviews.map(review => {
+        //     delete review.byUser
+        //     return review
+        // })
 
         return user
     } catch (err) {
-        logger.error(`while finding user by id: ${userId}`, err)
+        logger.error(`user.service - error while finding user by id: ${userId}:`, err)
         throw err
     }
 }
@@ -62,7 +62,7 @@ async function getByUsername(username) {
         const user = await collection.findOne({ username })
         return user
     } catch (err) {
-        logger.error(`while finding user by username: ${username}`, err)
+        logger.error(`user.service - error while finding user by username: ${username}:`, err)
         throw err
     }
 }
@@ -81,11 +81,10 @@ async function remove(userId) {
 
 async function update(user) {
     try {
-        // peek only updatable properties
+        // pick only updatable properties
         const userToSave = {
-            _id: ObjectId.createFromHexString(user._id), // needed for the returnd obj
+            _id: ObjectId.createFromHexString(user._id),
             fullname: user.fullname,
-            score: user.score,
         }
         const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
