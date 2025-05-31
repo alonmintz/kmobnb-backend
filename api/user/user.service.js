@@ -12,10 +12,12 @@ export const userService = {
     getByUsername, // Used for Login
 }
 
+const USERS_COLLECTION = 'users'
+
 async function query(filterBy = {}) {
     const criteria = _buildCriteria(filterBy)
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         var users = await collection.find(criteria).toArray()
         users = users.map(user => {
             delete user.password
@@ -35,32 +37,32 @@ async function getById(userId) {
     try {
         var criteria = { _id: ObjectId.createFromHexString(userId) }
 
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         const user = await collection.findOne(criteria)
         delete user.password
 
-        criteria = { byUserId: userId }
+        // criteria = { byUserId: userId }
 
-        // user.givenReviews = await reviewService.query(criteria)
-        user.givenReviews = user.givenReviews.map(review => {
-            delete review.byUser
-            return review
-        })
+        // // user.givenReviews = await reviewService.query(criteria)
+        // user.givenReviews = user.givenReviews.map(review => {
+        //     delete review.byUser
+        //     return review
+        // })
 
         return user
     } catch (err) {
-        logger.error(`while finding user by id: ${userId}`, err)
+        logger.error(`user.service - error while finding user by id: ${userId}:`, err)
         throw err
     }
 }
 
 async function getByUsername(username) {
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         const user = await collection.findOne({ username })
         return user
     } catch (err) {
-        logger.error(`while finding user by username: ${username}`, err)
+        logger.error(`user.service - error while finding user by username: ${username}:`, err)
         throw err
     }
 }
@@ -69,7 +71,7 @@ async function remove(userId) {
     try {
         const criteria = { _id: ObjectId.createFromHexString(userId) }
 
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.deleteOne(criteria)
     } catch (err) {
         logger.error(`cannot remove user ${userId}`, err)
@@ -79,13 +81,12 @@ async function remove(userId) {
 
 async function update(user) {
     try {
-        // peek only updatable properties
+        // pick only updatable properties
         const userToSave = {
-            _id: ObjectId.createFromHexString(user._id), // needed for the returnd obj
+            _id: ObjectId.createFromHexString(user._id),
             fullname: user.fullname,
-            score: user.score,
         }
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
         return userToSave
     } catch (err) {
@@ -96,16 +97,16 @@ async function update(user) {
 
 async function add(user) {
     try {
-        // peek only updatable fields!
+        // pick only updatable fields!
         const userToAdd = {
             username: user.username,
-            password: user.password,
+            password: user.pwHash,
             fullname: user.fullname,
             imgUrl: user.imgUrl,
             isAdmin: user.isAdmin,
-            score: 100,
+            isHost: user.isHost
         }
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.insertOne(userToAdd)
         return userToAdd
     } catch (err) {

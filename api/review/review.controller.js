@@ -66,7 +66,7 @@ export async function getReviewsByStayId(req, res) {
 export async function addReview(req, res) {
   const { loggedinUser, body: review } = req;
   try {
-    //todo: EYAL
+    //TODO: EYAL
     //full loggedin user will be populated in the requireAuth middleware
     // review.by = {object with necessary loggedin user fields}
 
