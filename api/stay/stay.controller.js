@@ -46,7 +46,7 @@ export async function getStayById(req, res) {
 export async function addStay(req, res) {
   const { loggedinUser, body: stay } = req;
   try {
-    //todo: EYAL
+    //TODO: EYAL
     //full loggedin user will be populated in the requireAuth middleware
     // stay.host = {object with necessary loggedin user fields}
 
