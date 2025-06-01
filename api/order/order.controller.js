@@ -43,8 +43,8 @@ export async function addOrder(req, res) {
     const addedOrder = await orderService.getOrderById(
       insertResult.insertedId.toString()
     )
-    
-    res.status(200).send(addedOrder)
+
+    res.status(201).send(addedOrder)
   } catch (err) {
     logger.error("order.controller - Failed to addOrder: " + err)
     res.status(500).send({ Error: "Failed to add order" })
@@ -52,5 +52,15 @@ export async function addOrder(req, res) {
 }
 
 export async function updateOrderStatus(req, res) {
+  try {
+    const orderId = req.params.orderId
+    const status = req.body.status
 
+    const updatedOrder = await orderService.updateStatus(orderId, status)
+
+    res.status(201).send(updatedOrder)
+  } catch (err) {
+    logger.error("order.controller - Failed to updateOrderStatus: " + err)
+    res.status(500).send({ Error: "Failed to update order status" })
+  }
 }

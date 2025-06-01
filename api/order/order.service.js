@@ -5,7 +5,8 @@ import { logger } from "../../services/logger.service.js";
 export const orderService = {
   getHostOrders,
   getOrderById,
-  add
+  add,
+  updateStatus
 }
 
 const ORDERS_COLLECTION = 'orders'
@@ -74,4 +75,22 @@ async function add(order) {
     logger.error("order.service - Failed to add: " + err)
     throw err
   }
+}
+
+async function updateStatus(orderId, status) {
+  try {
+    const collection = await dbService.getCollection(ORDERS_COLLECTION)
+
+    const updatedOrder = await collection.findOneAndUpdate(
+      { _id: ObjectId.createFromHexString(orderId) },
+      { $set: { status } },
+      { returnDocument: "after" }
+    )
+
+    return updatedOrder
+  } catch (err) {
+    logger.error("order.service - Failed to update: " + err)
+    throw err
+  }
+
 }

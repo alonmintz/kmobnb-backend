@@ -10,6 +10,6 @@ router.use(log)
 router.get("/", requireAuth, getHostOrders)
 router.get("/:orderId", requireAuth, getOrder)
 router.post("/", requireAuth, addOrder)
-// router.put("/:orderId", requireAuth, updateOrderStatus)
+router.put("/:orderId", requireAuth, updateOrderStatus)
 
 export const orderRouter = router
