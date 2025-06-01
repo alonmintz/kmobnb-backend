@@ -1,12 +1,11 @@
 import { logger } from "../../services/logger.service.js"
 import { orderService } from "./order.service.js"
 
-
 export async function getHostOrders(req, res) {
   try {
     const userId = req.loggedinUser._id
     const stayId = req.query.stayId
-    logger.info('order.controller - getOrdersByHostId, hostId is:' + req.loggedinUser._id)
+    logger.debug('order.controller - getOrdersByHostId. hostId is:' + userId + ', stayId: ' + stayId)
     const orders = await orderService.getHostOrders(userId, stayId)
     res.status(200).json(orders)
   } catch (err) {
@@ -17,9 +16,13 @@ export async function getHostOrders(req, res) {
 
 export async function getOrder(req, res) {
   try {
-    const stayId = req.params.orderId
+    const orderId = req.params.orderId
+    logger.debug('order.controller - getOrder. orderId: ' + orderId)
+    const order = await orderService.getOrderById(orderId)
+    res.status(200).json(order)
   } catch (err) {
     logger.error("order.controller - Failed to getOrder:" + err)
+    res.status(500).send({ Error: "Failed to get order" })
   }
 }
 
