@@ -10,6 +10,7 @@ import { authRoutes } from "./api/auth/auth.routes.js";
 import { stayRouter } from "./api/stay/stay.routes.js";
 import { reviewRouter } from "./api/review/review.routes.js";
 import { orderRouter } from "./api/order/order.routes.js";
+import { userRoutes } from "./api/user/user.routes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/stay", stayRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/user", userRoutes)
 
 // handle non-existant routes
 app.get("/*all", (req, res) => {

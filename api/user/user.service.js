@@ -1,6 +1,5 @@
 import { dbService } from '../../services/db.service.js'
 import { logger } from '../../services/logger.service.js'
-// import { reviewService } from '../review/review.service.js'
 import { ObjectId } from 'mongodb'
 
 export const userService = {
@@ -10,6 +9,9 @@ export const userService = {
     remove, // Delete (remove user)
     query, // List (of users)
     getByUsername, // Used for Login
+    getWishlist,
+    addToWishlist,
+    removeFromWishlist
 }
 
 const USERS_COLLECTION = 'users'
@@ -111,6 +113,56 @@ async function add(user) {
         return userToAdd
     } catch (err) {
         logger.error('cannot add user', err)
+        throw err
+    }
+}
+
+async function getWishlist(userId) {
+    try {
+        const collection = await dbService.getCollection(USERS_COLLECTION)
+        const user = await collection.findOne(
+            { _id: ObjectId.createFromHexString(userId) },
+            { projection: { wishlist: 1 } }
+        )
+        return user?.wishlist || []
+    } catch (err) {
+        logger.error("user.service - Failed to getWishlist: " + err)
+        throw err
+    }
+}
+
+async function addToWishlist(userId, miniStay) {
+    const userIdObj = ObjectId.createFromHexString(userId)
+    try {
+        const collection = await dbService.getCollection(USERS_COLLECTION)
+
+        await collection.findOneAndUpdate(
+            {
+                _id: userIdObj,
+                'wishlist.stayId': miniStay.stayId
+            },
+            { $set: { 'wishlist.$': miniStay } },
+            { returnDocument: 'after' }
+        )
+
+        return miniStay
+    } catch (err) {
+        logger.error("user.service - Failed to addToWishlist: " + err)
+        throw err
+    }
+}
+
+async function removeFromWishlist(userId, stayId) {
+    try {
+        const stayIdObj = ObjectId.createFromHexString(stayId)
+        const collection = await dbService.getCollection(USERS_COLLECTION)
+        const result = await collection.updateOne(
+            { _id: ObjectId.createFromHexString(userId) },
+            { $pull: { wishlist: { stayId: stayIdObj } } }
+        )
+        return stayId
+    } catch (err) {
+        logger.error("user.service - Failed to removeFromWishList: " + err)
         throw err
     }
 }
