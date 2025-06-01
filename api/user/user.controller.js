@@ -1,5 +1,6 @@
 import { userService } from './user.service.js'
 import { logger } from '../../services/logger.service.js'
+import { stayService } from '../stay/stay.service.js'
 
 export async function getUser(req, res) {
     try {
@@ -43,5 +44,54 @@ export async function updateUser(req, res) {
     } catch (err) {
         logger.error('Failed to update user', err)
         res.status(400).send({ err: 'Failed to update user' })
+    }
+}
+
+export async function getWishlist(req, res) {
+    try {
+        const userId = req.loggedinUser._id
+        const wishlist = await userService.getWishlist(userId)
+        res.send(wishlist)
+    } catch (err) {
+        logger.error("user.controller - Failed to getWishlist: " + err)
+        res.status(500).send({ Error: "Failed to get wishlist" })
+    }
+}
+
+export async function addToWishlist(req, res) {
+    try {
+        const userId = req.loggedinUser._id
+        const stayId = req.body.stayId
+        
+        const stay = await stayService.getById(stayId)
+        
+        const miniStayForWishlist = {
+            stayId: stay._id,
+            name: stay.name,
+            imgUrl: stay.imgUrls[0],
+            loc: stay.loc,
+            type: stay.type,
+            roomType: stay.roomType
+        }
+
+        const addedWishlistEntry = await userService.addToWishlist(userId, miniStayForWishlist)
+
+        res.send(addedWishlistEntry)
+        
+    } catch (err) {
+        logger.error("user.controller - Failed to addToWishlist: " + err)
+        res.status(500).send({ Error: "Failed to add to wishlist" })
+    }
+}
+
+export async function removeFromWishlist(req, res) {
+    try {
+        const userId = req.loggedinUser._id
+        const stayId = req.body.stayId
+        const result = await userService.removeFromWishlist(userId, stayId)
+        res.send({result})
+    } catch (err) {
+        logger.error("user.controller - Failed to removeFromWishlist: " + err)
+        res.status(500).send({ Error: "Failed to remove from wishlist" })
     }
 }
