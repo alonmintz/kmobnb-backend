@@ -10,17 +10,15 @@ export const orderService = {
 const ORDERS_COLLECTION = 'orders'
 
 async function getHostOrders(hostId, stayId) {
-  const hostIdObj = new ObjectId(hostId)
-
   try {
     const collection = await dbService.getCollection(ORDERS_COLLECTION)
 
     const matchCriteria = {
-      "stay.host.userId": hostIdObj
+      "stay.host.userId": ObjectId.createFromHexString(hostId)
     }
 
     if (stayId) {
-      matchCriteria["stay._id"] = new ObjectId(stayId)
+      matchCriteria["stay._id"] = ObjectId.createFromHexString(stayId)
     }
 
     const orders = await collection.aggregate([
