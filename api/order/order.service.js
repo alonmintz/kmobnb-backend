@@ -1,16 +1,27 @@
 import { ObjectId } from "mongodb";
 import { dbService } from "../../services/db.service.js";
+import { logger } from "../../services/logger.service.js";
 
 export const orderService = {
-  getByHostId
+  getHostOrders
 }
 
 const ORDERS_COLLECTION = 'orders'
 
-async function getByHostId(hostId) {
+async function getHostOrders(hostId, stayId) {
   const hostIdObj = new ObjectId(hostId)
+
   try {
     const collection = await dbService.getCollection(ORDERS_COLLECTION)
+    
+    const criteria = {
+      "stay.host.userId": hostIdObj
+    }
+
+    if (stayId) {
+      criteria["stay._id"] = new ObjectId(stayId)
+    }
+
     const orders = await collection.aggregate([
       {
         $lookup: {
@@ -21,9 +32,7 @@ async function getByHostId(hostId) {
         }
       },
       {
-        $match: {
-          "stay.host.userId": hostIdObj
-        }
+        $match: criteria
       },
       {
         $project: {
@@ -35,7 +44,7 @@ async function getByHostId(hostId) {
     return orders
 
   } catch (err) {
-  logger.error("order.service - Failed to get orders:" + err)
-  throw err
-}
+    logger.error("order.service - Failed to get orders:" + err)
+    throw err
+  }
 }
