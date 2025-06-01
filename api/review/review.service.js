@@ -82,9 +82,9 @@ async function getCalculatedData(filterBy) {
     const [avgStarsRate, starsRatings, categoryRatings, reviews] =
       await Promise.all([
         reviewsCount ? _getAverageStarsRating(totalReviews) : null,
-        _getStarsRatingCount(totalReviews),
-        _getAverageCategoryRatings(totalReviews),
-        query(filterBy),
+        reviewsCount ? _getStarsRatingCount(totalReviews) : null,
+        reviewsCount ? _getAverageCategoryRatings(totalReviews) : null,
+        reviewsCount ? query(filterBy) : [],
       ]);
 
     return {
