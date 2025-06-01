@@ -4,7 +4,8 @@ import { logger } from "../../services/logger.service.js";
 
 export const orderService = {
   getHostOrders,
-  getOrderById
+  getOrderById,
+  add
 }
 
 const ORDERS_COLLECTION = 'orders'
@@ -60,6 +61,17 @@ async function getOrderById(orderId) {
 
   } catch (err) {
     logger.error("order.service - Failed to getOrderById: " + err)
+    throw err
+  }
+}
+
+async function add(order) {
+  try {
+    const collection = await dbService.getCollection(ORDERS_COLLECTION)
+    const insertResult = await collection.insertOne(order)
+    return insertResult
+  } catch (err) {
+    logger.error("order.service - Failed to add: " + err)
     throw err
   }
 }

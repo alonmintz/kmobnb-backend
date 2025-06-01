@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb"
 import { logger } from "../../services/logger.service.js"
 import { orderService } from "./order.service.js"
 
@@ -21,13 +22,33 @@ export async function getOrder(req, res) {
     const order = await orderService.getOrderById(orderId)
     res.status(200).json(order)
   } catch (err) {
-    logger.error("order.controller - Failed to getOrder:" + err)
+    logger.error("order.controller - Failed to getOrder: " + err)
     res.status(500).send({ Error: "Failed to get order" })
   }
 }
 
 export async function addOrder(req, res) {
+  try {
+    const order = {
+      userId: ObjectId.createFromHexString(req.loggedinUser._id),
+      stayId: ObjectId.createFromHexString(req.body.stayId),
+      guests: req.body.guests,
+      price: req.body.price,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      orderTime: new Date().toISOString()
+    }
 
+    const insertResult = await orderService.add(order)
+    const addedOrder = await orderService.getOrderById(
+      insertResult.insertedId.toString()
+    )
+    
+    res.status(200).send(addedOrder)
+  } catch (err) {
+    logger.error("order.controller - Failed to addOrder: " + err)
+    res.status(500).send({ Error: "Failed to add order" })
+  }
 }
 
 export async function updateOrderStatus(req, res) {
