@@ -136,14 +136,22 @@ async function addToWishlist(userId, miniStay) {
     try {
         const collection = await dbService.getCollection(USERS_COLLECTION)
 
-        await collection.findOneAndUpdate(
+        const result = await collection.findOneAndUpdate(
             {
                 _id: userIdObj,
                 'wishlist.stayId': miniStay.stayId
             },
             { $set: { 'wishlist.$': miniStay } },
-            { returnDocument: 'after' }
+            { returnDocument: 'after', }
         )
+
+        if (!result) {
+            await collection.findOneAndUpdate(
+                { _id: userIdObj },
+                { $push: { wishlist: miniStay } },
+                { returnDocument: 'after' }
+            )
+        }
 
         return miniStay
     } catch (err) {
