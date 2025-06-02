@@ -73,8 +73,8 @@ export async function updateStay(req, res) {
 }
 
 export async function updateStayStatus(req, res) {
-  const { params, body } = req;
-  const stayId = params.id;
+  const { body } = req;
+  const stayId = body._id;
   const status = body.status;
 
   if (status !== "active" && status !== "inactive")
@@ -85,7 +85,7 @@ export async function updateStayStatus(req, res) {
     const updatedStay = await stayService.update(updateStatusPayload);
     res.status(201).json(updatedStay);
   } catch (err) {
-    logger.error(`Failed to set stay ${stayId} status to ${status}`, err);
+    logger.error(`stay.controller - Failed to set stay ${stayId} status to ${status}`, err);
     res.status(500).send({ err: `Failed to set stay status to ${status}` });
   }
 }
