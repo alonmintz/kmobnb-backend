@@ -34,7 +34,6 @@ export const stayService = {
 
 async function query(filterBy) {
   filterBy = { ...emptyFilter, ...filterBy };
-
   try {
     const criteria = _buildCriteria(filterBy);
     const sort = _buildSort(filterBy);
