@@ -84,7 +84,6 @@ export async function addToWishlist(req, res) {
         const addedWishlistEntries = await Promise.all(
             miniStaysForWishList.map(miniStay =>
                 userService.addToWishlist(userId, miniStay)
-
             )
         )
 
@@ -100,8 +99,13 @@ export async function addToWishlist(req, res) {
 export async function removeFromWishlist(req, res) {
     try {
         const userId = req.loggedinUser._id
-        const stayId = req.body.stayId
-        const result = await userService.removeFromWishlist(userId, stayId)
+        const stayIds = req.body.stayIds
+        const result = await Promise.all(
+            stayIds.map(stayId => {
+                userService.removeFromWishlist(userId, stayId)
+            })
+        );
+        // const result = await userService.removeFromWishlist(userId, stayId)
         res.send({ result })
     } catch (err) {
         logger.error("user.controller - Failed to removeFromWishlist: " + err)
