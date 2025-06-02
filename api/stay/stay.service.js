@@ -76,8 +76,8 @@ async function query(filterBy) {
         },
       },
       { $sort: sort },
-      { $skip: filterBy.bulkIdx * filterBy.bulkSize },
-      { $limit: filterBy.bulkSize },
+      { $skip: +(filterBy.bulkIdx * filterBy.bulkSize) },
+      { $limit: +filterBy.bulkSize },
     ];
 
     let stays = await collection.aggregate(pipeline).toArray();
