@@ -61,23 +61,44 @@ export async function getWishlist(req, res) {
 export async function addToWishlist(req, res) {
     try {
         const userId = req.loggedinUser._id
-        const stayId = req.body.stayId
-        
-        const stay = await stayService.getById(stayId)
-        
-        const miniStayForWishlist = {
+        const stayIds = req.body.stayIds
+        logger.debug("stayIds: " + stayIds)
+
+
+        const stays = await Promise.all(
+            stayIds.map(stayId => stayService.getById(stayId))
+        )
+        logger.debug("stays: " + stays)
+
+        const miniStaysForWishList = stays.map((stay) => ({
             stayId: stay._id,
             name: stay.name,
             imgUrl: stay.imgUrls[0],
             loc: stay.loc,
             type: stay.type,
             roomType: stay.roomType
-        }
+        }))
+        // const miniStayForWishlist = {
+        //     stayId: stay._id,
+        //     name: stay.name,
+        //     imgUrl: stay.imgUrls[0],
+        //     loc: stay.loc,
+        //     type: stay.type,
+        //     roomType: stay.roomType
+        // }
 
-        const addedWishlistEntry = await userService.addToWishlist(userId, miniStayForWishlist)
+        logger.debug("miniStaysForWishList: " + miniStaysForWishList)
 
-        res.send(addedWishlistEntry)
-        
+        const addedWishlistEntries = await Promise.all(
+            miniStaysForWishList.map(miniStay =>
+                userService.addToWishlist(userId, miniStay)
+
+            )
+        )
+
+        logger.debug("addedWishlistEntries: " + addedWishlistEntries)
+
+        res.send(addedWishlistEntries)
     } catch (err) {
         logger.error("user.controller - Failed to addToWishlist: " + err)
         res.status(500).send({ Error: "Failed to add to wishlist" })
@@ -89,7 +110,7 @@ export async function removeFromWishlist(req, res) {
         const userId = req.loggedinUser._id
         const stayId = req.body.stayId
         const result = await userService.removeFromWishlist(userId, stayId)
-        res.send({result})
+        res.send({ result })
     } catch (err) {
         logger.error("user.controller - Failed to removeFromWishlist: " + err)
         res.status(500).send({ Error: "Failed to remove from wishlist" })
