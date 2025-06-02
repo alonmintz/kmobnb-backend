@@ -125,7 +125,8 @@ async function add(stay) {
 
 async function update(stay) {
   const { _id, ...stayToSave } = stay;
-
+  const userId = stayToSave.host.userId;
+  stayToSave.host.userId = ObjectId.createFromHexString(userId);
   try {
     const criteria = { _id: ObjectId.createFromHexString(stay._id) };
     const collection = await dbService.getCollection("stays");
