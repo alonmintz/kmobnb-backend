@@ -75,7 +75,7 @@ async function query(filterBy) {
         },
       },
       { $sort: sort },
-      { $skip: filterBy.bulkIdx * filterBy.bulkSize },
+      { $skip: +(filterBy.bulkIdx * filterBy.bulkSize) },
       { $limit: +filterBy.bulkSize },
     ];
 
