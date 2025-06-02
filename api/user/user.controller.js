@@ -78,14 +78,6 @@ export async function addToWishlist(req, res) {
             type: stay.type,
             roomType: stay.roomType
         }))
-        // const miniStayForWishlist = {
-        //     stayId: stay._id,
-        //     name: stay.name,
-        //     imgUrl: stay.imgUrls[0],
-        //     loc: stay.loc,
-        //     type: stay.type,
-        //     roomType: stay.roomType
-        // }
 
         logger.debug("miniStaysForWishList: " + miniStaysForWishList)
 
