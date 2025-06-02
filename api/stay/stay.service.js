@@ -34,7 +34,6 @@ export const stayService = {
 
 async function query(filterBy) {
   filterBy = { ...emptyFilter, ...filterBy };
-
   try {
     const criteria = _buildCriteria(filterBy);
     const sort = _buildSort(filterBy);
@@ -77,7 +76,7 @@ async function query(filterBy) {
       },
       { $sort: sort },
       { $skip: filterBy.bulkIdx * filterBy.bulkSize },
-      { $limit: filterBy.bulkSize },
+      { $limit: +filterBy.bulkSize },
     ];
 
     let stays = await collection.aggregate(pipeline).toArray();
