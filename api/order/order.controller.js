@@ -1,13 +1,18 @@
 import { ObjectId } from "mongodb"
 import { logger } from "../../services/logger.service.js"
 import { orderService } from "./order.service.js"
+// import { genSaltSync } from "bcrypt"
+import { stayService } from "../stay/stay.service.js"
+import { getDayDiff } from "../../services/util.service.js"
+
+const DAILY_SERVICE_FEE = 4
 
 export async function getHostOrders(req, res) {
   try {
     const userId = req.loggedinUser._id
-    const stayId = req.query.stayId
-    logger.debug('order.controller - getOrdersByHostId. hostId is:' + userId + ', stayId: ' + stayId)
-    const orders = await orderService.getHostOrders(userId, stayId)
+    const listingId = req.query.listingId
+    // logger.debug('order.controller - getOrdersByHostId. hostId is:' + userId + ', stayId: ' + stayId)
+    const orders = await orderService.getHostOrders(userId, listingId)
     res.status(200).json(orders)
   } catch (err) {
     logger.error('order.controller - Failed to getHostOrders:' + err)
@@ -29,14 +34,24 @@ export async function getOrder(req, res) {
 
 export async function addOrder(req, res) {
   try {
+    const userInput = req.body.order
+
+    const listingFromBackend = await stayService.getById(userInput.stayId)
+    const listingPricePerNight = listingFromBackend.price
+    const totalNights = getDayDiff(userInput.startDate, userInput.endDate)
+    const totalPrice = (totalNights * listingPricePerNight) + (totalNights * DAILY_SERVICE_FEE)
+
     const order = {
       userId: ObjectId.createFromHexString(req.loggedinUser._id),
-      stayId: ObjectId.createFromHexString(req.body.stayId),
-      guests: req.body.guests,
-      price: req.body.price,
-      startDate: req.body.startDate,
-      endDate: req.body.endDate,
-      orderTime: new Date().toISOString()
+      userFullname: req.loggedinUser.fullname,
+      userImgUrl: req.loggedinUser?.imgUrl || "",
+      stayId: ObjectId.createFromHexString(req.body.order.stayId),
+      guests: req.body.order.guests,
+      price: totalPrice,
+      startDate: req.body.order.startDate,
+      endDate: req.body.order.endDate,
+      orderTime: new Date().toISOString(),
+      status: "pending"
     }
 
     const insertResult = await orderService.add(order)

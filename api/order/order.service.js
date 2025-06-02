@@ -11,7 +11,7 @@ export const orderService = {
 
 const ORDERS_COLLECTION = 'orders'
 
-async function getHostOrders(hostId, stayId) {
+async function getHostOrders(hostId, listingId) {
   try {
     const collection = await dbService.getCollection(ORDERS_COLLECTION)
 
@@ -19,8 +19,8 @@ async function getHostOrders(hostId, stayId) {
       "stay.host.userId": ObjectId.createFromHexString(hostId)
     }
 
-    if (stayId) {
-      matchCriteria["stay._id"] = ObjectId.createFromHexString(stayId)
+    if (listingId) {
+      matchCriteria["stay._id"] = ObjectId.createFromHexString(listingId)
     }
 
     const orders = await collection.aggregate([
