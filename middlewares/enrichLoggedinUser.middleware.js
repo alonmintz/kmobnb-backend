@@ -13,6 +13,7 @@ export async function enrichLoggedinUser(req, res, next) {
       console.log('err enriching:', err)
     }
   }
-  
+    console.log("enrichLoggedinUser middleware passed successfully");
+
   next()
 }
