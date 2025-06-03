@@ -139,7 +139,7 @@ async function update(stay) {
 
     return updatedStay;
   } catch (err) {
-    logger.error(`cannot update stay ${stay._id}`, err);
+    logger.error(`stay.service - cannot update stay ${stay._id}: ` + err);
     throw err;
   }
 }
