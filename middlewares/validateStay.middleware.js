@@ -22,6 +22,7 @@ export async function validateUserIdIsHostId(req, res, next) {
   if (loggedinUserId !== host.userId.toString()) {
     res.status(400).send("Stay is not owned by logged in user");
   }
+  console.log("validateUserIdIsHostId middleware passed successfully");
 
   next();
 }
@@ -30,12 +31,15 @@ export function validateStayRequiredFields(req, res, next) {
   const { body: stay } = req;
 
   if (!stay.name || stay.name.length === 0) {
+    console.log("Name is required");
     return res.status(400).send({ err: "Name is required" });
   }
   if (!stay.price || stay.price <= 0) {
+    console.log("Price must be greater than 0");
     return res.status(400).send({ err: "Price must be greater than 0" });
   }
   if (!stay.summary || stay.summary.length > 500) {
+    console.log("Price must be greater than 0");
     return res
       .status(400)
       .send({ err: "Summary must be 500 characters or less" });
@@ -63,6 +67,7 @@ export function validateStayRequiredFields(req, res, next) {
   if (!stay.loc || !stay.loc.city || stay.loc.city === "") {
     return res.status(400).send({ err: "Location city is required" });
   }
+  console.log("validateStayRequiredFields middleware passed successfully");
 
   next();
 }

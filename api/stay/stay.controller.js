@@ -1,4 +1,6 @@
 import { logger } from "../../services/logger.service.js";
+import { ObjectId } from "mongodb";
+
 import {
   LIST_TYPE_DEFAULT,
   DEFAULT_BULK_INDEX,
@@ -45,8 +47,8 @@ export async function getStayById(req, res) {
 
 export async function addStay(req, res) {
   const { loggedinUser, body: stay } = req;
-  const { _id: userId, fullname, imgUrl, isSuperHost } = loggedinUser;
-  userId = ObjectId.createFromHexString(userId);
+  const { _id: userIdString, fullname, imgUrl, isSuperHost } = loggedinUser;
+  const userId = ObjectId.createFromHexString(userIdString);
   stay.host = { userId, fullname, imgUrl, isSuperHost };
   try {
     const insertResult = await stayService.add(stay);
@@ -90,7 +92,10 @@ export async function updateStayStatus(req, res) {
     const updatedStay = await stayService.update(updateStatusPayload);
     res.status(201).json(updatedStay);
   } catch (err) {
-    logger.error(`stay.controller - Failed to set stay ${stayId} status to ${status}`, err);
+    logger.error(
+      `stay.controller - Failed to set stay ${stayId} status to ${status}`,
+      err
+    );
     res.status(500).send({ err: `Failed to set stay status to ${status}` });
   }
 }

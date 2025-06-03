@@ -7,5 +7,7 @@ export function requireAuth(req, res, next) {
   }
   // console.log('requireAuth, loggedinUser:', loggedinUser)
   req.loggedinUser = loggedinUser;
+  console.log("requireAuth middleware passed successfully");
+
   next();
 }
