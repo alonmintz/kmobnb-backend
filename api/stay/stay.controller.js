@@ -50,6 +50,7 @@ export async function addStay(req, res) {
   const { _id: userIdString, fullname, imgUrl, isSuperHost } = loggedinUser;
   const userId = ObjectId.createFromHexString(userIdString);
   stay.host = { userId, fullname, imgUrl, isSuperHost };
+  stay.occupancy = [];
   try {
     const insertResult = await stayService.add(stay);
     const addedStay = await stayService.getById(
@@ -78,7 +79,7 @@ export async function updateStayStatus(req, res) {
   const { body, loggedinUser } = req;
   const stayId = body._id;
   const status = body.status;
-  const userId = loggedinUser._id
+  const userId = loggedinUser._id;
 
   if (status !== "active" && status !== "inactive")
     throw new Error("Invalid status");
