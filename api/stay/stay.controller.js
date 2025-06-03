@@ -75,14 +75,19 @@ export async function updateStay(req, res) {
 }
 
 export async function updateStayStatus(req, res) {
-  const { body } = req;
+  const { body, loggedinUser } = req;
   const stayId = body._id;
   const status = body.status;
+  const userId = loggedinUser._id
 
   if (status !== "active" && status !== "inactive")
     throw new Error("Invalid status");
 
-  const updateStatusPayload = { _id: stayId, status };
+  const updateStatusPayload = {
+    _id: stayId,
+    host: { userId },
+    status,
+  };
   try {
     const updatedStay = await stayService.update(updateStatusPayload);
     res.status(201).json(updatedStay);
