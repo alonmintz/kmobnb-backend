@@ -82,8 +82,8 @@ async function getCalculatedData(filterBy) {
     const [avgStarsRate, starsRatings, categoryRatings, reviews] =
       await Promise.all([
         reviewsCount ? _getAverageStarsRating(totalReviews) : null,
-        reviewsCount ? _getStarsRatingCount(totalReviews) : null,
-        reviewsCount ? _getAverageCategoryRatings(totalReviews) : null,
+        _getStarsRatingCount(totalReviews),
+        _getAverageCategoryRatings(totalReviews),
         reviewsCount ? query(filterBy) : [],
       ]);
 
@@ -130,6 +130,8 @@ async function getById(reviewId) {
   }
 }
 
+//private functions:
+
 async function _getAverageStarsRating(reviews) {
   return Number(
     (
@@ -140,6 +142,12 @@ async function _getAverageStarsRating(reviews) {
 }
 
 async function _getStarsRatingCount(reviews) {
+  if (!reviews.length) {
+    return [1, 2, 3, 4, 5].map((rate) => ({
+      rate,
+      count: 0,
+    }));
+  }
   return [1, 2, 3, 4, 5].map((rate) => ({
     rate,
     count: reviews.filter((review) => review.starsRate === rate).length,
@@ -155,6 +163,14 @@ async function _getAverageCategoryRatings(reviews) {
     "location",
     "value",
   ];
+
+  if (!reviews.length) {
+    const zeroRatings = {};
+    for (const key of categoryKeys) {
+      zeroRatings[key] = 0.0;
+    }
+    return zeroRatings;
+  }
 
   const categoryRatings = {};
 
