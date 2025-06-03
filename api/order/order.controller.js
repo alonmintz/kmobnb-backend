@@ -1,11 +1,13 @@
 import { ObjectId } from "mongodb"
 import { logger } from "../../services/logger.service.js"
 import { orderService } from "./order.service.js"
-// import { genSaltSync } from "bcrypt"
 import { stayService } from "../stay/stay.service.js"
 import { getDayDiff } from "../../services/util.service.js"
 
 const DAILY_SERVICE_FEE = 4
+
+// order status
+const PENDING = "pending"
 
 export async function getHostOrders(req, res) {
   try {
@@ -31,7 +33,7 @@ export async function getOrder(req, res) {
     res.status(500).send({ Error: "Failed to get order" })
   }
 }
- 
+
 export async function addOrder(req, res) {
   try {
     const userInput = req.body.order
@@ -45,11 +47,12 @@ export async function addOrder(req, res) {
       userId: ObjectId.createFromHexString(req.loggedinUser._id),
       userFullname: req.loggedinUser.fullname,
       userImgUrl: req.loggedinUser?.imgUrl || "",
-      stayId: ObjectId.createFromHexString(req.body.order.stayId),
-      guests: req.body.order.guests,
+      stayId: ObjectId.createFromHexString(userInput.stayId),
+      stayName: userInput.stayName,
+      guests: userInput.guests,
       price: totalPrice,
-      startDate: req.body.order.startDate,
-      endDate: req.body.order.endDate,
+      startDate: userInput.startDate,
+      endDate: userInput.endDate,
       orderTime: new Date().toISOString(),
       status: "pending"
     }
@@ -70,6 +73,9 @@ export async function updateOrderStatus(req, res) {
   try {
     const orderId = req.params.orderId
     const status = req.body.status
+    if (status !== PENDING) {
+      res.status(403).send({ Error: "Order status already set" })
+    }
 
     const updatedOrder = await orderService.updateStatus(orderId, status)
 
