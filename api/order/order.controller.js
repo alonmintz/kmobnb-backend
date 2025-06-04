@@ -4,7 +4,10 @@ import { orderService } from "./order.service.js";
 // import { genSaltSync } from "bcrypt"
 import { stayService } from "../stay/stay.service.js";
 import { getDayDiff } from "../../services/util.service.js";
-import { socketService } from "../../services/socket.service.js";
+import {
+  SOCKET_EVENT_ORDER_STATUS_UPDATE,
+  socketService,
+} from "../../services/socket.service.js";
 
 const DAILY_SERVICE_FEE = 4;
 
@@ -87,8 +90,10 @@ export async function updateOrderStatus(req, res) {
   try {
     const orderId = req.params.orderId;
     const status = req.body.status;
+    const order = await orderService.getOrderById(orderId);
+    const { status: oldStatus } = order;
 
-    if (status !== PENDING) {
+    if (oldStatus !== PENDING) {
       logger.error(
         "order.controller - Failed to updateOrderStatus: Order status already set"
       );
@@ -97,10 +102,10 @@ export async function updateOrderStatus(req, res) {
     }
 
     const updatedOrder = await orderService.updateStatus(orderId, status);
-    const { status: updatedStatus, userId } = updatedOrder;
+    const { status: updatedStatus, userId, stayName } = updatedOrder;
     socketService.emitToUser({
-      type: "order-status-update",
-      data: { status: updatedStatus },
+      type: SOCKET_EVENT_ORDER_STATUS_UPDATE,
+      data: { status: updatedStatus, stayName },
       userId: userId,
     });
 
