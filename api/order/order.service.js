@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { dbService } from "../../services/db.service.js";
 import { logger } from "../../services/logger.service.js";
+import { stayService } from "../stay/stay.service.js";
 
 export const orderService = {
   getHostOrders,
@@ -10,6 +11,9 @@ export const orderService = {
 }
 
 const ORDERS_COLLECTION = 'orders'
+
+// order status
+const CANCELED = "canceled"
 
 async function getHostOrders(hostId, listingId) {
   try {
@@ -70,6 +74,16 @@ async function add(order) {
   try {
     const collection = await dbService.getCollection(ORDERS_COLLECTION)
     const insertResult = await collection.insertOne(order)
+
+    const occupancyObj = {
+      stayId: order.stayId,
+      orderId: insertResult.insertedId,
+      startDate: order.startDate,
+      endDate: order.endDate
+    }
+
+    await stayService.addOccupancy(occupancyObj)
+
     return insertResult
   } catch (err) {
     logger.error("order.service - Failed to add: " + err)
@@ -84,13 +98,16 @@ async function updateStatus(orderId, status) {
     const updatedOrder = await collection.findOneAndUpdate(
       { _id: ObjectId.createFromHexString(orderId) },
       { $set: { status } },
-      { returnDocument: "after" }
+      { returnDocument: 'after' }
     )
+
+    if (status === CANCELED) {
+      const updateResult = await stayService.removeOccupancy(updatedOrder.stayId, updatedOrder._id)
+    }
 
     return updatedOrder
   } catch (err) {
     logger.error("order.service - Failed to update: " + err)
     throw err
   }
-
 }

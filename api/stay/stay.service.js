@@ -9,6 +9,7 @@ export const DEFAULT_BULK_INDEX = 0;
 export const LIST_TYPE_DEFAULT = "default";
 export const SORT_BY_DEFAULT = "starsRate";
 const LIST_TYPE_BY_HOST = "by-host";
+const STAYS_COLLECTION = "stays";
 
 const emptyFilter = {
   status: "",
@@ -30,6 +31,8 @@ export const stayService = {
   getById,
   add,
   update,
+  addOccupancy,
+  removeOccupancy
 };
 
 async function query(filterBy) {
@@ -37,7 +40,7 @@ async function query(filterBy) {
   try {
     const criteria = _buildCriteria(filterBy);
     const sort = _buildSort(filterBy);
-    const collection = await dbService.getCollection("stays");
+    const collection = await dbService.getCollection(STAYS_COLLECTION);
 
     const pipeline = [
       { $match: criteria },
@@ -93,7 +96,7 @@ async function query(filterBy) {
 
 async function getById(stayId) {
   try {
-    const collection = await dbService.getCollection("stays");
+    const collection = await dbService.getCollection(STAYS_COLLECTION);
     const stay = await collection.findOne({
       _id: ObjectId.createFromHexString(stayId),
     });
@@ -113,7 +116,7 @@ async function getById(stayId) {
 
 async function add(stay) {
   try {
-    const collection = await dbService.getCollection("stays");
+    const collection = await dbService.getCollection(STAYS_COLLECTION);
     const insertResult = await collection.insertOne(stay);
 
     return insertResult;
@@ -129,7 +132,7 @@ async function update(stay) {
   stayToSave.host.userId = ObjectId.createFromHexString(userId);
   try {
     const criteria = { _id: ObjectId.createFromHexString(stay._id) };
-    const collection = await dbService.getCollection("stays");
+    const collection = await dbService.getCollection(STAYS_COLLECTION);
 
     const updatedStay = await collection.findOneAndUpdate(
       criteria,
@@ -141,6 +144,56 @@ async function update(stay) {
   } catch (err) {
     logger.error(`stay.service - cannot update stay ${stay._id}: ` + err);
     throw err;
+  }
+}
+
+async function addOccupancy(occupancyObj) {
+  const { stayId, orderId, startDate, endDate } = occupancyObj
+  try {
+    const collection = await dbService.getCollection(STAYS_COLLECTION)
+
+    const insertResult = await collection.findOneAndUpdate(
+      { _id: stayId },
+      {
+        $push: {
+          occupancy: {
+            orderId,
+            startDate,
+            endDate
+          }
+        }
+      },
+      { returnDocument: 'after' }
+    )
+
+    if (!insertResult) {
+      throw new Error(`stay.service - stay ${stayId} not found`)
+    }
+
+    return insertResult
+  } catch (err) {
+    logger.error("stay.service - failed to add occupancy: " + err)
+    throw err
+  }
+}
+
+async function removeOccupancy(stayId, orderId) {
+  try {
+    const collection = await dbService.getCollection(STAYS_COLLECTION)
+    const result = await collection.findOneAndUpdate(
+      { _id: stayId },
+      { $pull: { occupancy: { orderId } } },
+      { returnDocument: 'after' }
+    )
+
+    if (!result) {
+      logger.error(`stay.service - stay ${stayId} not found`)
+      throw new Error(`stay.service - stay ${stayId} not found`)
+    }
+
+  } catch (err) {
+    logger.error("stay.service - failed to remove occupancy: " + err)
+    throw err
   }
 }
 
