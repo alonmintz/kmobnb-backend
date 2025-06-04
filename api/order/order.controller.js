@@ -1,45 +1,57 @@
-import { ObjectId } from "mongodb"
-import { logger } from "../../services/logger.service.js"
-import { orderService } from "./order.service.js"
+import { ObjectId } from "mongodb";
+import { logger } from "../../services/logger.service.js";
+import { orderService } from "./order.service.js";
 // import { genSaltSync } from "bcrypt"
-import { stayService } from "../stay/stay.service.js"
-import { getDayDiff } from "../../services/util.service.js"
+import { stayService } from "../stay/stay.service.js";
+import { getDayDiff } from "../../services/util.service.js";
 
-const DAILY_SERVICE_FEE = 4
+const DAILY_SERVICE_FEE = 4;
 
 export async function getHostOrders(req, res) {
   try {
-    const userId = req.loggedinUser._id
-    const listingId = req.query.listingId
+    const userId = req.loggedinUser._id;
+    const listingId = req.query.listingId;
     // logger.debug('order.controller - getOrdersByHostId. hostId is:' + userId + ', stayId: ' + stayId)
-    const orders = await orderService.getHostOrders(userId, listingId)
-    res.status(200).json(orders)
+    const orders = await orderService.getHostOrders(userId, listingId);
+    res.status(200).json(orders);
   } catch (err) {
-    logger.error('order.controller - Failed to getHostOrders:' + err)
-    res.status(500).send({ Error: "Failed to get orders" })
+    logger.error("order.controller - Failed to getHostOrders:" + err);
+    res.status(500).send({ Error: "Failed to get orders" });
+  }
+}
+
+export async function getUserOrders(req, res) {
+  try {
+    const userId = req.loggedinUser._id;
+    const orders = await orderService.getUserOrders(userId);
+    res.status(200).json(orders);
+  } catch (err) {
+    logger.error("order.controller - Failed to getHostOrders:" + err);
+    res.status(500).send({ Error: "Failed to get orders" });
   }
 }
 
 export async function getOrder(req, res) {
   try {
-    const orderId = req.params.orderId
-    logger.debug('order.controller - getOrder. orderId: ' + orderId)
-    const order = await orderService.getOrderById(orderId)
-    res.status(200).json(order)
+    const orderId = req.params.orderId;
+    logger.debug("order.controller - getOrder. orderId: " + orderId);
+    const order = await orderService.getOrderById(orderId);
+    res.status(200).json(order);
   } catch (err) {
-    logger.error("order.controller - Failed to getOrder: " + err)
-    res.status(500).send({ Error: "Failed to get order" })
+    logger.error("order.controller - Failed to getOrder: " + err);
+    res.status(500).send({ Error: "Failed to get order" });
   }
 }
- 
+
 export async function addOrder(req, res) {
   try {
-    const userInput = req.body.order
+    const userInput = req.body.order;
 
-    const listingFromBackend = await stayService.getById(userInput.stayId)
-    const listingPricePerNight = listingFromBackend.price
-    const totalNights = getDayDiff(userInput.startDate, userInput.endDate)
-    const totalPrice = (totalNights * listingPricePerNight) + (totalNights * DAILY_SERVICE_FEE)
+    const listingFromBackend = await stayService.getById(userInput.stayId);
+    const listingPricePerNight = listingFromBackend.price;
+    const totalNights = getDayDiff(userInput.startDate, userInput.endDate);
+    const totalPrice =
+      totalNights * listingPricePerNight + totalNights * DAILY_SERVICE_FEE;
 
     const order = {
       userId: ObjectId.createFromHexString(req.loggedinUser._id),
@@ -51,31 +63,31 @@ export async function addOrder(req, res) {
       startDate: req.body.order.startDate,
       endDate: req.body.order.endDate,
       orderTime: new Date().toISOString(),
-      status: "pending"
-    }
+      status: "pending",
+    };
 
-    const insertResult = await orderService.add(order)
+    const insertResult = await orderService.add(order);
     const addedOrder = await orderService.getOrderById(
       insertResult.insertedId.toString()
-    )
+    );
 
-    res.status(201).send(addedOrder)
+    res.status(201).send(addedOrder);
   } catch (err) {
-    logger.error("order.controller - Failed to addOrder: " + err)
-    res.status(500).send({ Error: "Failed to add order" })
+    logger.error("order.controller - Failed to addOrder: " + err);
+    res.status(500).send({ Error: "Failed to add order" });
   }
 }
 
 export async function updateOrderStatus(req, res) {
   try {
-    const orderId = req.params.orderId
-    const status = req.body.status
+    const orderId = req.params.orderId;
+    const status = req.body.status;
 
-    const updatedOrder = await orderService.updateStatus(orderId, status)
+    const updatedOrder = await orderService.updateStatus(orderId, status);
 
-    res.status(201).send(updatedOrder)
+    res.status(201).send(updatedOrder);
   } catch (err) {
-    logger.error("order.controller - Failed to updateOrderStatus: " + err)
-    res.status(500).send({ Error: "Failed to update order status" })
+    logger.error("order.controller - Failed to updateOrderStatus: " + err);
+    res.status(500).send({ Error: "Failed to update order status" });
   }
 }
