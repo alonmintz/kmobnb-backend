@@ -62,6 +62,7 @@ export async function addOrder(req, res) {
       userImgUrl: req.loggedinUser?.imgUrl || "",
       stayId: ObjectId.createFromHexString(userInput.stayId),
       stayName: userInput.stayName,
+      hostId: listingFromBackend.host._id,
       guests: userInput.guests,
       price: totalPrice,
       startDate: userInput.startDate,
