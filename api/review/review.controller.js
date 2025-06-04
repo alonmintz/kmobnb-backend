@@ -66,8 +66,8 @@ export async function getReviewsByStayId(req, res) {
 
 export async function addReview(req, res) {
   const { loggedinUser, body: review } = req;
-  const { fullname, imgUrl, _id: userId } = loggedinUser;
-  userId = ObjectId.createFromHexString(userId);
+  const { fullname, imgUrl, _id: userIdString } = loggedinUser;
+  const userId = ObjectId.createFromHexString(userIdString);
   review.by = { fullname, imgUrl, userId };
   try {
     const insertResult = await reviewsService.add(review);
