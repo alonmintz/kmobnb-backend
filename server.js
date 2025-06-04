@@ -39,7 +39,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/stay", stayRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/order", orderRouter);
-app.use("/api/user", userRoutes)
+app.use("/api/user", userRoutes);
+
+setupSocketAPI(server);
 
 // handle non-existant routes
 app.get("/*all", (req, res) => {
@@ -48,6 +50,7 @@ app.get("/*all", (req, res) => {
 
 // Run server
 import { logger } from "./services/logger.service.js";
+import { setupSocketAPI } from "./services/socket.service.js";
 const port = process.env.PORT || 3030;
 
 server.listen(port, () => {

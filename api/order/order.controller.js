@@ -4,6 +4,7 @@ import { orderService } from "./order.service.js";
 // import { genSaltSync } from "bcrypt"
 import { stayService } from "../stay/stay.service.js";
 import { getDayDiff } from "../../services/util.service.js";
+import { socketService } from "../../services/socket.service.js";
 
 const DAILY_SERVICE_FEE = 4;
 
@@ -96,6 +97,12 @@ export async function updateOrderStatus(req, res) {
     }
 
     const updatedOrder = await orderService.updateStatus(orderId, status);
+    const { status: updatedStatus, userId } = updatedOrder;
+    socketService.emitToUser({
+      type: "order-status-update",
+      data: { status: updatedStatus },
+      userId: userId,
+    });
 
     res.status(201).send(updatedOrder);
   } catch (err) {
