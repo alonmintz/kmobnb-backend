@@ -8,7 +8,7 @@ import { getDayDiff } from "../../services/util.service.js";
 const DAILY_SERVICE_FEE = 4;
 
 // order status
-const PENDING = "pending"
+const PENDING = "pending";
 
 export async function getHostOrders(req, res) {
   try {
@@ -84,10 +84,15 @@ export async function addOrder(req, res) {
 
 export async function updateOrderStatus(req, res) {
   try {
-    const orderId = req.params.orderId
-    const status = req.body.status
+    const orderId = req.params.orderId;
+    const status = req.body.status;
+
     if (status !== PENDING) {
-      res.status(403).send({ Error: "Order status already set" })
+      logger.error(
+        "order.controller - Failed to updateOrderStatus: Order status already set"
+      );
+      res.status(403).send({ Error: "Order status already set" });
+      return;
     }
 
     const updatedOrder = await orderService.updateStatus(orderId, status);
