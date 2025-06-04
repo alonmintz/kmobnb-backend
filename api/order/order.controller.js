@@ -48,7 +48,7 @@ export async function getOrder(req, res) {
 
 export async function addOrder(req, res) {
   try {
-    const userInput = req.body.order;
+    const userInput = req.body;
 
     const listingFromBackend = await stayService.getById(userInput.stayId);
     const listingPricePerNight = listingFromBackend.price;
@@ -61,14 +61,14 @@ export async function addOrder(req, res) {
       userFullname: req.loggedinUser.fullname,
       userImgUrl: req.loggedinUser?.imgUrl || "",
       stayId: ObjectId.createFromHexString(userInput.stayId),
-      stayName: userInput.stayName,
-      hostId: listingFromBackend.host._id,
+      stayName: listingFromBackend.name,
+      hostId: listingFromBackend.host.userId,
       guests: userInput.guests,
-      price: totalPrice,
       startDate: userInput.startDate,
       endDate: userInput.endDate,
+      price: totalPrice,
       orderTime: new Date().toISOString(),
-      status: "pending",
+      status: PENDING,
     };
 
     const insertResult = await orderService.add(order);
