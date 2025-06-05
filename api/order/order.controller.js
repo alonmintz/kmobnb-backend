@@ -5,6 +5,7 @@ import { orderService } from "./order.service.js";
 import { stayService } from "../stay/stay.service.js";
 import { getDayDiff } from "../../services/util.service.js";
 import {
+  SOCKET_EVENT_ORDER_ADDED,
   SOCKET_EVENT_ORDER_STATUS_UPDATE,
   socketService,
 } from "../../services/socket.service.js";
@@ -79,7 +80,13 @@ export async function addOrder(req, res) {
     const addedOrder = await orderService.getOrderById(
       insertResult.insertedId.toString()
     );
+    const { hostId, stayName, stayId } = addedOrder;
 
+    socketService.emitToUser({
+      type: SOCKET_EVENT_ORDER_ADDED,
+      data: { hostId, stayName, stayId },
+      userId: hostId,
+    });
     res.status(201).send(addedOrder);
   } catch (err) {
     logger.error("order.controller - Failed to addOrder: " + err);
