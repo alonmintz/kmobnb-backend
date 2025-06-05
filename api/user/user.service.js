@@ -106,7 +106,8 @@ async function add(user) {
             fullname: user.fullname,
             imgUrl: user.imgUrl,
             isAdmin: user.isAdmin,
-            isHost: user.isHost
+            isHost: user.isHost,
+            wishlist: user.wishlist
         }
         const collection = await dbService.getCollection(USERS_COLLECTION)
         await collection.insertOne(userToAdd)
