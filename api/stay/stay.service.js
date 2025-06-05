@@ -32,7 +32,7 @@ export const stayService = {
   add,
   update,
   addOccupancy,
-  removeOccupancy
+  removeOccupancy,
 };
 
 async function query(filterBy) {
@@ -148,9 +148,9 @@ async function update(stay) {
 }
 
 async function addOccupancy(occupancyObj) {
-  const { stayId, orderId, startDate, endDate } = occupancyObj
+  const { stayId, orderId, startDate, endDate } = occupancyObj;
   try {
-    const collection = await dbService.getCollection(STAYS_COLLECTION)
+    const collection = await dbService.getCollection(STAYS_COLLECTION);
 
     const insertResult = await collection.findOneAndUpdate(
       { _id: stayId },
@@ -159,47 +159,49 @@ async function addOccupancy(occupancyObj) {
           occupancy: {
             orderId,
             startDate,
-            endDate
-          }
-        }
+            endDate,
+          },
+        },
       },
-      { returnDocument: 'after' }
-    )
+      { returnDocument: "after" }
+    );
 
     if (!insertResult) {
-      throw new Error(`stay.service - stay ${stayId} not found`)
+      throw new Error(`stay.service - stay ${stayId} not found`);
     }
 
-    return insertResult
+    return insertResult;
   } catch (err) {
-    logger.error("stay.service - failed to add occupancy: " + err)
-    throw err
+    logger.error("stay.service - failed to add occupancy: " + err);
+    throw err;
   }
 }
 
 async function removeOccupancy(stayId, orderId) {
   try {
-    const collection = await dbService.getCollection(STAYS_COLLECTION)
+    const collection = await dbService.getCollection(STAYS_COLLECTION);
     const result = await collection.findOneAndUpdate(
       { _id: stayId },
       { $pull: { occupancy: { orderId } } },
-      { returnDocument: 'after' }
-    )
+      { returnDocument: "after" }
+    );
 
     if (!result) {
-      logger.error(`stay.service - stay ${stayId} not found`)
-      throw new Error(`stay.service - stay ${stayId} not found`)
+      logger.error(`stay.service - stay ${stayId} not found`);
+      throw new Error(`stay.service - stay ${stayId} not found`);
     }
-
   } catch (err) {
-    logger.error("stay.service - failed to remove occupancy: " + err)
-    throw err
+    logger.error("stay.service - failed to remove occupancy: " + err);
+    throw err;
   }
 }
 
 function _buildCriteria(filterBy) {
   const criteria = {
-    status: { $regex: filterBy.status, $options: "i" },
+    status:
+      filterBy.listType === LIST_TYPE_BY_HOST
+        ? { $regex: filterBy.status, $options: "i" }
+        : filterBy.status,
     ["loc.city"]: { $regex: filterBy.city, $options: "i" },
     type: { $regex: filterBy.type, $options: "i" },
     capacity: { $gte: filterBy.capacity },

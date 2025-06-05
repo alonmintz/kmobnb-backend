@@ -12,7 +12,7 @@ import {
 export async function getStays(req, res) {
   try {
     const filterBy = {
-      status: req.query.status || "",
+      status: req.query.status || "active",
       city: req.query.city || "",
       startDate: req.query.startDate || null,
       endDate: req.query.endDate || null,
@@ -83,12 +83,15 @@ export async function updateStayStatus(req, res) {
 
   if (status !== "active" && status !== "inactive")
     throw new Error("Invalid status");
+  const host = { ...loggedinUser, userId };
+  delete host._id;
 
   const updateStatusPayload = {
     _id: stayId,
-    host: { userId },
+    host,
     status,
   };
+
   try {
     const updatedStay = await stayService.update(updateStatusPayload);
     res.status(201).json(updatedStay);
