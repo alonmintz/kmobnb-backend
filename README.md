@@ -8,7 +8,6 @@ This is the backend service for **KmoBnb**, an Airbnb-style web application. It 
 
 - **Node.js** + **Express** – REST API server
 - **MongoDB** – Database for storing stays, users, orders, etc.
-- **Mongoose** – ODM for MongoDB
 - **Cors** – Handles cross-origin requests
 - **Cookie-parser** – Manages sessions and auth tokens
 - **Dotenv** – Environment configuration
@@ -18,20 +17,13 @@ This is the backend service for **KmoBnb**, an Airbnb-style web application. It 
 
 ## 📁 Project Structure
 
-kmobnb-backend/
-├── api/ # Controllers for each resource (stay, user, auth, etc.)
-├── services/ # Business logic and data access layers
-├── middlewares/ # Custom middleware for auth, logging, etc.
-├── config/ # Configuration files and constants
-├── data/ # Static or mock data
-├── utils/ # Utility functions
-├── server.js # Entry point
-├── routes/ # Route setup
-└── README.md
-
-yaml
-Copy
-Edit
+kmobnb-backend/    
+├── api/ # Routes, Controllers ad services for each resource (stay, user, auth, order, review)    
+├── services/ # General services (eg. socket.service, util.service)    
+├── middlewares/ # Custom middleware for auth, logging, etc.    
+├── config.js # Configuration file    
+├── server.js # Entry point    
+└── README.md    
 
 ---
 
@@ -56,7 +48,7 @@ MONGO_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/kmobnb_db
 ```
 Replace <username>, <password>, and <cluster> with your actual MongoDB Atlas credentials.
 
-4. Run the server (development mode)
+### 4. Run the server (development mode)
 ```bash
 npm run server:dev
 ```
@@ -93,7 +85,7 @@ Make sure VITE_API_URL on the frontend points to /api.
 Frontend Repository: [kmobnb-frontend](https://github.com/alonmintz/kmobnb-frontend)
 
 ## 🧑‍💻 Authors  
-Alon Mintz: [github](https://github.com/alonmintz) 
-Eyal Kravitz: [github](https://github.com/keyal)   
+Alon Mintz: [Github](https://github.com/alonmintz) 
+Eyal Kravitz: [Github](https://github.com/keyal)   
  
 
