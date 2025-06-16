@@ -90,11 +90,10 @@ Environment variables should be defined in Render's Environment settings.
 Make sure VITE_API_URL on the frontend points to /api.
 
 ## 📌 Related Projects  
-Frontend Repository: kmobnb-frontend
+Frontend Repository: [kmobnb-frontend](https://github.com/alonmintz/kmobnb-frontend)
 
 ## 🧑‍💻 Authors  
-Alon Mintz  
-github.com/alonmintz  
-Eyal Kravitz  
-github.com/keyal  
+Alon Mintz: [github](https://github.com/alonmintz) 
+Eyal Kravitz: [github](https://github.com/keyal)   
+ 
 
