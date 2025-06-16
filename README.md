@@ -62,7 +62,7 @@ npm run server:dev
 ```
 The server will run at: http://localhost:3030
 
-📦 Example API Endpoints
+## 📦 Example API Endpoints  
 GET /api/stay – Get all stays
 
 GET /api/stay/:id – Get a single stay
@@ -75,26 +75,26 @@ POST /api/auth/signup – Sign up
 
 GET /api/user – Get all users
 
-🔐 Authentication
+## 🔐 Authentication  
 Authentication is handled using session cookies.
 
 On login, the backend sets a secure HTTP-only cookie.
 
 Protected routes check for a valid session before proceeding.
 
-🚀 Deployment
+## 🚀 Deployment  
 This project is ready for deployment on Render or similar Node.js-friendly platforms.
 
 Environment variables should be defined in Render's Environment settings.
 
 Make sure VITE_API_URL on the frontend points to /api.
 
-📌 Related Projects
+## 📌 Related Projects  
 Frontend Repository: kmobnb-frontend
 
-🧑‍💻 Authors
-Alon Mintz
-github.com/alonmintz
-Eyal Kravitz
-github.com/keyal
+## 🧑‍💻 Authors  
+Alon Mintz  
+github.com/alonmintz  
+Eyal Kravitz  
+github.com/keyal  
 
