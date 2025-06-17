@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { logger } from "../../services/logger.service.js";
 import { dbService } from "../../services/db.service.js";
 
-export const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE_SIZE = 100;
 export const DEFAULT_PAGE_INDEX = 0;
 export const DEFAULT_SORT_BY = "at";
 
